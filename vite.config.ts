@@ -31,9 +31,6 @@ export default defineConfig({
     },
   },
 
-  // GitHub Pages 使用 Repository 名稱作為路徑
-  base: '/FinancialBudgetApp/',
-
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })
