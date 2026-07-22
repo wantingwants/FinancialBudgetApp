@@ -543,7 +543,7 @@ function FullTxRow({ tx, kidColor, isFirst, onEdit, onDelete }: {
   return (
     <div className="flex items-center gap-4 px-6 py-4 group hover:bg-muted/40 transition-colors">
       {/* Icon */}
-      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: isAdd ? kidColor : "#FF8687" }}>
+      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: isAdd ? kidColor : "#282633" : "#FF8687" }}>
         {isAdd ? <Plus size={15} /> : <Minus size={15} />}
       </div>
 
