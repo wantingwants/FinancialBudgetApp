@@ -321,7 +321,7 @@ function DashboardKidCard({ kid, editingName, nameInput, nameRef, onStartEditNam
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium text-white transition-all hover:scale-105 active:scale-95"
               style={{ background: kid.color, fontFamily: "'Lexend', sans-serif" }}
             >
-              <Plus size={13} /> Add
+              <Plus size={13} /> Earn
             </button>
             <button
               onClick={() => onAdd("reduce")}
@@ -442,7 +442,7 @@ function TransactionsPage({ kid, onBack, onAdd, onEdit, onDelete, modal, kids, o
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:scale-105 active:scale-95"
               style={{ background: kid.color }}
             >
-              <Plus size={14} /> Add
+              <Plus size={14} /> Earn
             </button>
             <button
               onClick={() => onAdd("reduce")}
