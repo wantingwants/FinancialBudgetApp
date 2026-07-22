@@ -356,11 +356,11 @@ function DashboardKidCard({ kid, editingName, nameInput, nameRef, onStartEditNam
           )}
           {recent.map((tx) => (
             <div key={tx.id} className="flex items-center gap-2 px-2 py-1.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: tx.type === "add" ? "#22C55E" : "#EF4444" }}>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: tx.type === "add" ? "#FF8687" : "#282633" }}>
                 {tx.type === "add" ? <Plus size={10} /> : <Minus size={10} />}
               </div>
               <span className="text-sm flex-1 truncate" style={{ fontFamily: "'Lexend', sans-serif" }}>{tx.description}</span>
-              <span className="text-sm tabular-nums flex-shrink-0" style={{ fontFamily: "'DM Mono', monospace", color: tx.type === "add" ? "#22C55E" : "#EF4444" }}>
+              <span className="text-sm tabular-nums flex-shrink-0" style={{ fontFamily: "'DM Mono', monospace", color: tx.type === "add" ? "#FF8687" : "#282633" }}>
                 {tx.type === "add" ? "+" : "−"}{formatAmt(tx.amount, tx.currency)}
               </span>
             </div>
