@@ -7,7 +7,7 @@ import { initializeApp } from "firebase/app";
 export const firebaseConfig = {
   apiKey: "AIzaSyCaUxFsUI871ceaiZypAWn2fOdSkrIzzQs",
   authDomain: "digital-wallet-2489f.firebaseapp.com",
-  databaseURL: "https://digital-wallet-2489f-default-rtdb.europe-west1.firebasedatabase.app/"
+  databaseURL: "https://digital-wallet-2489f-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "digital-wallet-2489f",
   storageBucket: "digital-wallet-2489f.firebasestorage.app",
   messagingSenderId: "885549921751",
