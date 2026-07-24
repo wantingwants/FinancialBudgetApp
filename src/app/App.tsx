@@ -222,8 +222,8 @@ export default function App() {
 
   function restoreKids() {
     setKids([
-      { id: "kid1", name: "小朋友 1", ...KID_COLORS.kid1, transactions: [] },
-      { id: "kid2", name: "小朋友 2", ...KID_COLORS.kid2, transactions: [] },
+      { id: "kid1", name: "Kid 1", ...KID_COLORS.kid1, transactions: [] },
+      { id: "kid2", name: "Kid 2", ...KID_COLORS.kid2, transactions: [] },
     ]);
   }
 
@@ -322,10 +322,10 @@ export default function App() {
             </div>
             <div>
               <p className="text-lg font-bold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#282633" }}>
-                現在尚未有任何資料
+                No data yet
               </p>
               <p className="text-sm mt-1" style={{ color: "#9A9AAA" }}>
-                目前沒有任何小朋友的紀錄，按下面的按鈕重新開始。
+                There aren't any kids or records right now. Get started again below.
               </p>
             </div>
             <button
@@ -333,7 +333,7 @@ export default function App() {
               className="px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{ background: "#FF8687", fontFamily: "'Lexend', sans-serif" }}
             >
-              建立兩位小朋友帳戶
+              Create two kid accounts
             </button>
           </div>
         ) : (
