@@ -220,6 +220,13 @@ export default function App() {
     setKids((prev) => prev.map((k) => k.id === kidId ? { ...k, transactions: k.transactions.filter((t) => t.id !== txId) } : k));
   }
 
+  function restoreKids() {
+    setKids([
+      { id: "kid1", name: "小朋友 1", ...KID_COLORS.kid1, transactions: [] },
+      { id: "kid2", name: "小朋友 2", ...KID_COLORS.kid2, transactions: [] },
+    ]);
+  }
+
   function startEditName(kid: Kid) {
     setEditingNameId(kid.id);
     setNameInput(kid.name);
@@ -234,7 +241,13 @@ export default function App() {
   // ── Page routing ──────────────────────────────────────────────────────────
 
   if (page !== "dashboard") {
-    const kid = kids.find((k) => k.id === page.kidId)!;
+    const kid = kids.find((k) => k.id === page.kidId);
+    if (!kid) {
+      // The kid this page was showing no longer exists (e.g. data was cleared
+      // from another device) — bounce back to the dashboard instead of crashing.
+      setPage("dashboard");
+      return null;
+    }
     return (
       <TransactionsPage
         kid={kid}
@@ -302,47 +315,72 @@ export default function App() {
           </div>
         </header>
 
-        {/* Kid Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {kids.map((kid) => (
-            <DashboardKidCard
-              key={kid.id}
-              kid={kid}
-              editingName={editingNameId === kid.id}
-              nameInput={nameInput}
-              nameRef={editingNameId === kid.id ? nameRef : undefined}
-              onStartEditName={() => startEditName(kid)}
-              onNameInput={setNameInput}
-              onSaveName={() => saveName(kid.id)}
-              onCancelName={() => setEditingNameId(null)}
-              onAdd={(type) => openAdd(kid.id, type)}
-              onViewAll={() => setPage({ kind: "transactions", kidId: kid.id })}
-            />
-          ))}
-        </div>
-
-        {/* Comparison Chart */}
-        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
-          <h2 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Fredoka', sans-serif" }}>
-            Balance Comparison
-          </h2>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={chartData} barGap={6} barCategoryGap="40%">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(43,43,53,0.06)" vertical={false} />
-              <XAxis dataKey="currency" tick={{ fontFamily: "'DM Mono', monospace", fontSize: 12, fill: "#9A9AAA" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fill: "#9A9AAA" }} axisLine={false} tickLine={false} width={52} />
-              <Tooltip
-                cursor={{ fill: "rgba(43,43,53,0.04)" }}
-                contentStyle={{ fontFamily: "'DM Mono', monospace", fontSize: 12, borderRadius: 12, border: "1px solid rgba(43,43,53,0.1)", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
-                formatter={(val: number, name: string) => [`${val.toFixed(2)}`, name]}
-              />
-              <Legend wrapperStyle={{ fontFamily: "'Lexend', sans-serif", fontSize: 13, paddingTop: 16 }} />
+        {kids.length === 0 ? (
+          <div className="bg-card rounded-2xl border border-border p-12 shadow-sm text-center flex flex-col items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "#EEEEF2" }}>
+              <PiggyBank size={28} style={{ color: "#9A9AAA" }} />
+            </div>
+            <div>
+              <p className="text-lg font-bold" style={{ fontFamily: "'Fredoka', sans-serif", color: "#282633" }}>
+                現在尚未有任何資料
+              </p>
+              <p className="text-sm mt-1" style={{ color: "#9A9AAA" }}>
+                目前沒有任何小朋友的紀錄，按下面的按鈕重新開始。
+              </p>
+            </div>
+            <button
+              onClick={restoreKids}
+              className="px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: "#FF8687", fontFamily: "'Lexend', sans-serif" }}
+            >
+              建立兩位小朋友帳戶
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Kid Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {kids.map((kid) => (
-                <Bar key={kid.id} dataKey={kid.name} fill={kid.color} radius={[8, 8, 0, 0]} maxBarSize={80} />
+                <DashboardKidCard
+                  key={kid.id}
+                  kid={kid}
+                  editingName={editingNameId === kid.id}
+                  nameInput={nameInput}
+                  nameRef={editingNameId === kid.id ? nameRef : undefined}
+                  onStartEditName={() => startEditName(kid)}
+                  onNameInput={setNameInput}
+                  onSaveName={() => saveName(kid.id)}
+                  onCancelName={() => setEditingNameId(null)}
+                  onAdd={(type) => openAdd(kid.id, type)}
+                  onViewAll={() => setPage({ kind: "transactions", kidId: kid.id })}
+                />
               ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+            </div>
+
+            {/* Comparison Chart */}
+            <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+              <h2 className="text-2xl font-bold mb-6" style={{ fontFamily: "'Fredoka', sans-serif" }}>
+                Balance Comparison
+              </h2>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={chartData} barGap={6} barCategoryGap="40%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(43,43,53,0.06)" vertical={false} />
+                  <XAxis dataKey="currency" tick={{ fontFamily: "'DM Mono', monospace", fontSize: 12, fill: "#9A9AAA" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fill: "#9A9AAA" }} axisLine={false} tickLine={false} width={52} />
+                  <Tooltip
+                    cursor={{ fill: "rgba(43,43,53,0.04)" }}
+                    contentStyle={{ fontFamily: "'DM Mono', monospace", fontSize: 12, borderRadius: 12, border: "1px solid rgba(43,43,53,0.1)", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
+                    formatter={(val: number, name: string) => [`${val.toFixed(2)}`, name]}
+                  />
+                  <Legend wrapperStyle={{ fontFamily: "'Lexend', sans-serif", fontSize: 13, paddingTop: 16 }} />
+                  {kids.map((kid) => (
+                    <Bar key={kid.id} dataKey={kid.name} fill={kid.color} radius={[8, 8, 0, 0]} maxBarSize={80} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
       </div>
 
       {modal && (
@@ -676,7 +714,8 @@ function TransactionModal({ modal, kids, onChange, onSave, onClose }: {
   onSave: () => void;
   onClose: () => void;
 }) {
-  const kid = kids.find((k) => k.id === modal.kidId)!;
+  const kid = kids.find((k) => k.id === modal.kidId);
+  if (!kid) return null;
   const isEdit = !!modal.editId;
   const isValid = modal.description.trim().length > 0 && parseFloat(modal.amount) > 0 && !!modal.date;
 
