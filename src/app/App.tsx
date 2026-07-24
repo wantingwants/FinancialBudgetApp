@@ -4,6 +4,9 @@ import {
   ResponsiveContainer, Legend,
 } from "recharts";
 import { Plus, Minus, Pencil, Trash2, X, Check, PiggyBank, ArrowLeft, ArrowRight } from "lucide-react";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, onValue, set as dbSet } from "firebase/database";
+import { firebaseConfig } from "../firebaseConfig";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,10 +106,75 @@ const INITIAL_KIDS: Kid[] = [
   },
 ];
 
+// ─── Persistence ──────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = "piggybank-kids-v1";
+
+function loadKids(): Kid[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return INITIAL_KIDS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return INITIAL_KIDS;
+    return parsed;
+  } catch {
+    return INITIAL_KIDS;
+  }
+}
+
+// Realtime Database — every device that opens this app reads/writes the same
+// "kids" node, so records show up on all devices within a second or two.
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+const KIDS_PATH = "kids";
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [kids, setKids] = useState<Kid[]>(INITIAL_KIDS);
+  // Start from whatever we have cached locally so the UI isn't empty while
+  // we wait for Firebase to respond (instant paint + offline fallback).
+  const [kids, setKids] = useState<Kid[]>(loadKids);
+  const [syncStatus, setSyncStatus] = useState<"connecting" | "synced" | "offline">("connecting");
+  const hasSyncedOnce = useRef(false);
+
+  // Subscribe to Firebase for real-time cross-device sync.
+  useEffect(() => {
+    const kidsRef = ref(db, KIDS_PATH);
+    const unsubscribe = onValue(
+      kidsRef,
+      (snapshot) => {
+        const remote = snapshot.val();
+        if (Array.isArray(remote) && remote.length > 0) {
+          setKids(remote);
+        } else if (!hasSyncedOnce.current) {
+          // Nothing in the database yet (first time ever running this app) —
+          // seed it with whatever we have locally so it isn't empty.
+          dbSet(kidsRef, kids);
+        }
+        hasSyncedOnce.current = true;
+        setSyncStatus("synced");
+      },
+      () => {
+        // Firebase unreachable (offline, bad config, blocked rules, etc.)
+        // Keep working from the local cache instead of breaking the app.
+        setSyncStatus("offline");
+      }
+    );
+    return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Whenever the data changes (locally or from another device), keep a local
+  // cache for instant loads / offline use, and push it up to Firebase.
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(kids));
+    } catch {
+      // storage full or unavailable — data just won't persist this time
+    }
+    if (!hasSyncedOnce.current) return; // don't push until we've reconciled with remote at least once
+    dbSet(ref(db, KIDS_PATH), kids).catch(() => setSyncStatus("offline"));
+  }, [kids]);
   const [page, setPage] = useState<Page>("dashboard");
   const [modal, setModal] = useState<ModalState | null>(null);
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
@@ -207,6 +275,25 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <span
+              className="px-3 py-1.5 rounded-xl text-xs font-medium border border-border flex items-center gap-1.5"
+              style={{ fontFamily: "'DM Mono', monospace", color: "#282633", background: "#EEEEF2" }}
+              title={
+                syncStatus === "synced"
+                  ? "Connected — changes sync across devices"
+                  : syncStatus === "offline"
+                  ? "Can't reach the cloud right now — saving on this device only"
+                  : "Connecting…"
+              }
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: syncStatus === "synced" ? "#34C759" : syncStatus === "offline" ? "#FF8687" : "#9A9AAA",
+                }}
+              />
+              {syncStatus === "synced" ? "Synced" : syncStatus === "offline" ? "Offline" : "Connecting…"}
+            </span>
             {CURRENCIES.map((cur) => (
               <span key={cur} className="px-3 py-1.5 rounded-xl text-xs font-medium border border-border" style={{ fontFamily: "'DM Mono', monospace", color: "#282633", background: "#EEEEF2" }}>
                 {cur} {SYMBOLS[cur]}
@@ -543,7 +630,7 @@ function FullTxRow({ tx, kidColor, isFirst, onEdit, onDelete }: {
   return (
     <div className="flex items-center gap-4 px-6 py-4 group hover:bg-muted/40 transition-colors">
       {/* Icon */}
-      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: isAdd ? kidColor : "#282633" : "#FF8687" }}>
+      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: isAdd ? kidColor : "#FF8687" }}>
         {isAdd ? <Plus size={15} /> : <Minus size={15} />}
       </div>
 
