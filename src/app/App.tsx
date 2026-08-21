@@ -614,12 +614,10 @@ function TransactionsPage({ kid, onBack, onAdd, onEdit, onDelete, modal, kids, o
             <div className="py-16 text-center text-muted-foreground text-sm">No transactions match the filter.</div>
           ) : (
             <div className="divide-y divide-border">
-              {sorted.map((tx, i) => (
+              {sorted.map((tx) => (
                 <FullTxRow
                   key={tx.id}
                   tx={tx}
-                  kidColor={kid.color}
-                  isFirst={i === 0}
                   onEdit={() => onEdit(tx)}
                   onDelete={() => onDelete(tx.id)}
                 />
@@ -657,10 +655,8 @@ function FilterPill({ children, active, color, onClick }: { children: React.Reac
 
 // ─── Full Transaction Row ─────────────────────────────────────────────────────
 
-function FullTxRow({ tx, kidColor, isFirst, onEdit, onDelete }: {
+function FullTxRow({ tx, onEdit, onDelete }: {
   tx: Transaction;
-  kidColor: string;
-  isFirst: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -668,7 +664,10 @@ function FullTxRow({ tx, kidColor, isFirst, onEdit, onDelete }: {
   return (
     <div className="flex items-center gap-4 px-6 py-4 group hover:bg-muted/40 transition-colors">
       {/* Icon */}
-      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white" style={{ background: isAdd ? kidColor : "#FF8687" }}>
+      <div
+        className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white"
+        style={{ background: isAdd ? "#FF8687" : "#282633" }}
+      >
         {isAdd ? <Plus size={15} /> : <Minus size={15} />}
       </div>
 
@@ -688,7 +687,7 @@ function FullTxRow({ tx, kidColor, isFirst, onEdit, onDelete }: {
       </div>
 
       {/* Amount */}
-      <div className="text-base font-semibold tabular-nums flex-shrink-0 w-28 text-right" style={{ fontFamily: "'DM Mono', monospace", color: isAdd ? kidColor : "#FF8687" }}>
+      <div className="text-base font-semibold tabular-nums flex-shrink-0 w-28 text-right" style={{ fontFamily: "'DM Mono', monospace", color: isAdd ? "#FF8687" : "#282633" }}>
         {isAdd ? "+" : "−"}{formatAmt(tx.amount, tx.currency)}
       </div>
 
